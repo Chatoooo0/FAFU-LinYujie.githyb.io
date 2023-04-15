@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="initial-scale=1,maximum-scale=1,user-scalable=no"
+    />
+    <title>
+      Intro to MapView - Create a 2D map | Sample | ArcGIS Maps SDK for
+      JavaScript 4.26
+    </title>
+    <style>
+       #header {
+          height: 50px;
+          background-image: url(https://5b0988e595225.cdn.sohucs.com/images/20180512/4376f40d04804051880f8d97b663824d.jpeg);
+          color: grey;
+          text-align: center;
+          line-height: 50px;
+          font-size: 24px;
+      }
+        html,
+        body,
+         #viewDiv {
+          padding: 0;
+          margin: 0;
+          height: 100%;
+          width: 100%;
+        }
+    </style>
+
+    <link
+      rel="stylesheet"
+      href="https://js.arcgis.com/4.26/esri/themes/light/main.css"
+    />
+    <script src="https://js.arcgis.com/4.26/"></script>
+
+    <script>
+            require([
+              "esri/Map",
+              "esri/views/MapView",
+              "esri/layers/FeatureLayer",
+              "esri/widgets/Legend",
+              "esri/widgets/ScaleBar",
+              "esri/widgets/Search",
+              "esri/widgets/LayerList",
+              "esri/widgets/BasemapToggle",
+              "esri/widgets/BasemapGallery",
+              "esri/widgets/TimeSlider",
+              "esri/widgets/Expand"
+            ], (
+              Map,
+              MapView,
+              FeatureLayer,
+              Legend,
+              ScaleBar,
+              Search,
+              LayerList,
+              BasemapToggle,
+              BasemapGallery,
+              TimeSlider,
+              Expand
+            ) => {
+              //*实例化图层*//
+              const flayer = new FeatureLayer({
+                // URL to the service
+                url: "https://www.geosceneonline.cn/server/rest/services/Hosted/2022EarthquakeInTaiwan_2plus/FeatureServer",
+                outFields: ["*"]
+              });
+
+              //*设置地图对象*//
+              const map = new Map({
+                basemap: "topo",
+                layers: [flayer]
+              });
+              //map1.layers.add();//添加对应的图层
+
+              //map.basemap = "hybrid"; //定义map对象
+
+              //*视图*//
+              //create
+              const lyjview = new MapView({
+                //定义查看方式
+                container: "viewDiv",
+                map: map,
+                zoom: 7.5,
+                center: [122.5, 23.5] // longitude, latitude
+              });
+
+              //*图例*//
+              //create
+              let lyjlegend = new Legend({
+                view: lyjview,
+                layerInfos: [
+                  {
+                    layer: flayer,
+                    title: "2022年台湾各级地震"
+                  }
+                ]
+              });
+              //show
+              lyjview.ui.add(lyjlegend, {
+                position: "bottom-right"
+              });
+
+              //*比例尺*//
+              //create
+              const lyjscaleBar = new ScaleBar({
+                view: lyjview,
+                unit: "metric",
+                style: "ruler"
+              });
+              //show
+              lyjview.ui.add(lyjscaleBar, {
+                position: "bottom-left"
+              });
+
+              //*搜索*//
+              //create
+              const search = new Search({
+                view: lyjview
+              });
+              //show
+              lyjview.ui.add(search, "top-right");
+
+              //*图层列表*//
+              //create
+              let layerList = new LayerList({
+                view: lyjview
+              });
+              // show
+              lyjview.ui.add(layerList, {
+                position: "top-right"
+              });
+
+              //*底图库*//
+              const basemapToggle = new BasemapToggle({
+                view: lyjview,
+                nextBasemap: "arcgis-imagery"
+              });
+              lyjview.ui.add(basemapToggle, "bottom-right");
+
+              const basemapGallery = new BasemapGallery({
+                view: lyjview,
+                source: {
+                  query: {
+                    title: '"World Basemaps for Developers" AND owner:esri'
+                  }
+                }
+              });
+              lyjview.ui.add(basemapGallery, "top-right");
+
+              //*查询*//
+               const sqlExpressions = ["Choose a SQL where clause...",  "mag > 5", ,"depth > 50" , "mag = mb", "gap < 100"];
+               const selectFilter = document.createElement("select");
+               selectFilter.setAttribute("class", "esri-widget esri-select");
+               selectFilter.setAttribute("style", "width: 275px; font-family: Avenir Next W00; font-size: 1em;");
+
+               sqlExpressions.forEach(function(sql){
+                let option = document.createElement("option");
+                 option.value = sql;
+                 option.innerHTML = sql;
+                 selectFilter.appendChild(option);
+               });
+        
+               lyjview.ui.add(selectFilter, "top-left");
+               
+               const featureLayer = new FeatureLayer({
+                  url: "https://www.geosceneonline.cn/server/rest/services/Hosted/2022EarthquakeInTaiwan_2plus/FeatureServer",
+                  outFields: ["*"],
+                    definitionExpression: "1=0"
+                  });
+              map.add(featureLayer);
+              
+              function setFeatureLayerFilter(expression) {
+              featureLayer.definitionExpression = expression;
+            }
+
+              selectFilter.addEventListener('change', function (event) {
+              setFeatureLayerFilter(event.target.value);
+            });
+            
+            });
+    </script>
+  </head>
+
+  <body>
+    <div id="header">2022年台湾地震情况</div>
+    <div id="viewDiv"></div>
+  </body>
+</html>
